@@ -1,0 +1,439 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Our Free Model · 独立端控制台 — 模型清单
+
+   虚拟滚动表格：行高 112px（与 models.tsx 的 estimateSize 一致，测试也按此值
+   模拟虚拟化）。行布局为「身份 / 渠道与能力 / 容量 / 状态 / 操作」五列，
+   窄屏折成两行卡片。
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.model-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.model-browser .actions { display: flex; gap: 8px; flex: none; }
+
+/* ── 状态摘要条 ───────────────────────────────────────────────────────────── */
+.model-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  padding: 9px 13px;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+  font-size: 11px;
+  color: var(--fg-2);
+}
+.model-summary > span { display: flex; align-items: center; gap: 6px; }
+
+/* ── 反馈 ─────────────────────────────────────────────────────────────────── */
+/* .channel-error 定义在 system/compat.css：用量统计页也用它，
+   而 models.css 是按需分包。 */
+
+.model-feedback {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--ok);
+}
+
+/* ── 筛选工具条 ───────────────────────────────────────────────────────────── */
+.model-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.model-search {
+  position: relative;
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 340px;
+}
+.model-search > svg {
+  position: absolute;
+  left: 10px;
+  top: 9px;
+  color: var(--fg-3);
+  pointer-events: none;
+}
+.model-search input { width: 100%; height: 32px; padding-left: 32px; }
+.model-filters > select { flex: none; max-width: 100%; }
+
+.model-list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--fg-2);
+}
+.model-list-toolbar > span[role="status"] {
+  margin-left: auto;
+  font-family: var(--mono-font);
+  font-variant-numeric: tabular-nums;
+}
+.model-list-toolbar > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--fg-1);
+  cursor: pointer;
+}
+/* 原生 checkbox 做成迷你开关的外观，但保留 checkbox 语义（测试按 role=switch 查询） */
+.model-list-toolbar input[type="checkbox"][role="switch"] {
+  appearance: none;
+  width: 30px;
+  height: 17px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--bg-4);
+  cursor: pointer;
+  position: relative;
+  transition: background-color var(--dur-base) var(--ease-out-expo), border-color var(--dur-base) ease;
+}
+.model-list-toolbar input[type="checkbox"][role="switch"]::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--fg-2);
+  transition: transform var(--dur-base) var(--ease-spring), background-color var(--dur-base) ease;
+}
+.model-list-toolbar input[type="checkbox"][role="switch"]:checked {
+  background: var(--accent);
+  border-color: transparent;
+}
+.model-list-toolbar input[type="checkbox"][role="switch"]:checked::after {
+  background: var(--accent-ink);
+  transform: translateX(13px);
+}
+.model-list-toolbar input[type="checkbox"][role="switch"]:disabled { opacity: .45; cursor: not-allowed; }
+
+/* 分段控件（全部 / 可接入 / 未公开）的样式定义在 system/shell.css：
+   它是按需分包，用量统计页也用它，不能只住在 models.css 里。 */
+
+/* ── 测试结果面板 ─────────────────────────────────────────────────────────── */
+.model-test-result {
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+  padding: 12px 14px;
+  animation: m-rise var(--dur-base) var(--ease-out-expo) both;
+  min-width: 0;
+}
+.model-test-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.model-test-heading > div { min-width: 0; }
+.model-test-heading strong { display: block; font-size: 12.5px; }
+.model-test-heading span { display: block; font-size: 11px; color: var(--fg-2); overflow-wrap: anywhere; }
+.model-test-result pre {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-sm);
+  background: var(--bg-0);
+  font-size: 11.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.model-test-result > p { margin: 8px 0 0; font-size: 11px; color: var(--fg-2); }
+.model-test-pending { border-color: var(--line-3); }
+.model-test-success { border-color: var(--ok-line); background: var(--ok-soft); }
+.model-test-error { border-color: var(--err-line); background: var(--err-soft); }
+.model-test-error > p { color: var(--err); }
+.model-test-cancelled { opacity: .75; }
+
+/* ── 表格 ─────────────────────────────────────────────────────────────────── */
+.model-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-lg);
+  background: var(--bg-1);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 列宽在这里定义一次，表头与数据行共用，保证永远对齐 */
+.model-table-header,
+.model-table-row {
+  display: grid;
+  grid-template-columns:
+    minmax(180px, 1.9fr)
+    minmax(120px, 1.1fr)
+    minmax(108px, .85fr)
+    minmax(130px, 1fr)
+    132px;
+  gap: 14px;
+  align-items: center;
+  padding: 0 15px;
+}
+
+.model-table-header {
+  height: 34px;
+  border-bottom: 1px solid var(--line-1);
+  background: var(--bg-2);
+  font-size: 10px;
+  font-weight: 560;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  flex: none;
+}
+
+.model-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* 高度取行高（112px）的整数倍，滚动区永远停在行边界，不会切出半行徽章。
+     行数少时由内容撑开（max-height 只是上限），因此不会留下大片死白。
+     注意不能用 contain:strict —— 它含 size containment，会把高度塌成 0，
+     虚拟列表一行都画不出来（表头有、内容全空）。 */
+  max-height: min(560px, 70vh);
+  contain: layout paint style;
+}
+.model-scroll:focus-visible { outline: 2px solid var(--fg-0); outline-offset: -2px; }
+
+/* 表格容器：底部一道淡出，提示"下面还有行"。
+   .model-table 有 overflow:hidden（为了圆角），::after 会被裁掉；
+   所以把淡出挂在滚动区自身的一个内联定位层上。 */
+.model-table { position: relative; }
+.model-table-body { position: relative; }
+.model-table-body::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--bg-1) 88%);
+  pointer-events: none;
+}
+
+.model-virtual-content { position: relative; width: 100%; }
+
+.model-table-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 112px;
+  border-bottom: 1px solid var(--line-1);
+  background: var(--bg-1);
+  transition: background-color var(--dur-fast) var(--ease-snap);
+  min-width: 0;
+}
+/* 悬停：整行提亮 + 左侧一道竖条滑入，比整行变色更克制 */
+.model-table-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--fg-0);
+  transform: scaleY(0);
+  transform-origin: 50% 50%;
+  transition: transform var(--dur-base) var(--ease-out-expo);
+}
+.model-table-row:hover { background: var(--bg-2); }
+.model-table-row:hover::before { transform: scaleY(1); }
+.model-table-row:focus-within { background: var(--bg-2); }
+.model-table-row:focus-within::before { transform: scaleY(1); }
+
+/* 身份列：名称 + 等宽 id */
+.model-identity { min-width: 0; }
+.model-identity strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 560;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.model-identity code {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--mono-font);
+  font-size: 10.5px;
+  color: var(--fg-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 渠道与能力 */
+.model-source { min-width: 0; }
+.model-source > span {
+  display: block;
+  font-size: 12px;
+  color: var(--fg-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.model-capabilities { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+
+/* 容量：两行，数字等宽 */
+.model-limits { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.model-limits > span {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--mono-font);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-0);
+  white-space: nowrap;
+}
+.model-limits small {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--fg-2);
+}
+
+/* 状态列 */
+.model-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+.model-state .ui-badge { max-width: 100%; }
+.model-state small {
+  max-width: 100%;
+  font-size: 10px;
+  color: var(--fg-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 操作列 */
+.model-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+}
+.model-row-actions .ui-button { flex: none; }
+.model-row-actions .ui-button-ghost { width: 28px; height: 28px; padding: 0; }
+.model-row-actions .ui-button-outline { height: 28px; padding: 0 10px; font-size: 11.5px; }
+
+/* 复制成功：图标弹一下并转成对勾色 */
+.md-copy-done { color: var(--ok); }
+.md-copy-done svg { animation: md-copy-pop 380ms var(--ease-spring); }
+@keyframes md-copy-pop {
+  0% { transform: scale(.6); }
+  55% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+/* 测试中：按钮持续呼吸，表示"正在等上游" */
+.md-testing { border-color: var(--line-3); animation: md-test-breathe 2s var(--ease-out-expo) infinite; }
+@keyframes md-test-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 0 4px transparent; }
+}
+
+/* ── 空态 ─────────────────────────────────────────────────────────────────── */
+.model-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 220px;
+  padding: 34px 20px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-lg);
+  background: var(--bg-1);
+  text-align: center;
+  color: var(--fg-2);
+}
+.model-empty > svg { color: var(--fg-3); animation: m-pulse 4s var(--ease-out-expo) infinite; }
+.model-empty h2 { font-size: 13.5px; color: var(--fg-0); }
+.model-empty p { font-size: 11.5px; max-width: 34ch; }
+.model-empty .ui-button { margin-top: 4px; }
+
+/* 隐私提示是可操作警告（Kilo 池可能记录提示词），不能压到看不见 */
+.model-browser .footnote { font-size: 11px; color: var(--fg-1); line-height: 1.55; }
+
+/* ── 响应式 ───────────────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .model-table-header,
+  .model-table-row {
+    grid-template-columns:
+      minmax(160px, 1.8fr)
+      minmax(104px, 1fr)
+      minmax(96px, .8fr)
+      minmax(112px, .95fr)
+      122px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 950px) {
+  /* 收起"容量"列，其余保持单行 */
+  .model-table-header,
+  .model-table-row {
+    grid-template-columns: minmax(150px, 1.8fr) minmax(96px, 1fr) minmax(108px, .9fr) 118px;
+  }
+  .model-table-header > span:nth-child(3),
+  .model-limits { display: none; }
+}
+
+@media (max-width: 700px) {
+  .model-filters > select { flex: 1 1 132px; }
+  .model-search { flex-basis: 100%; max-width: none; }
+  .model-table-header { display: none; }
+  /* 卡片式两行：身份+渠道在左，状态与操作在右 */
+  .model-table-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "identity actions"
+      "source   state";
+    gap: 4px 10px;
+    padding: 11px 12px;
+    align-content: center;
+  }
+  .model-identity { grid-area: identity; }
+  .model-source { grid-area: source; }
+  .model-state { grid-area: state; align-items: flex-end; }
+  .model-row-actions { grid-area: actions; }
+  .model-state small { max-width: 22ch; }
+  .model-summary { font-size: 10.5px; gap: 4px 12px; }
+}
+
+@media (max-width: 430px) {
+  .model-browser .actions { width: 100%; }
+  .model-browser .actions .ui-button { flex: 1; }
+  .model-list-toolbar > span[role="status"] { margin-left: 0; }
+  .model-row-actions .ui-button-outline { padding: 0 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-copy-done svg,
+  .md-testing,
+  .model-empty > svg { animation: none; }
+}

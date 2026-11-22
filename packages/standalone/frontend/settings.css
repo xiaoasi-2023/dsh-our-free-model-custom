@@ -1,0 +1,775 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Our Free Model · 独立端控制台 — 服务设置 / API 接入 / 应用更新
+                    + EAC 渠道管理外层（ch- / provider- / detail-）
+
+   三个页面共用同一套表单语言：分组卡片、字段行、状态条。
+   原先这个文件 947 行、叠了「黄铜纸面」与「青色仪器」两套世界观，
+   还有一整层只作用于浅色的精修补丁 —— 全部收进单色体系。
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. 服务设置 ──────────────────────────────────────────────────────────── */
+.settings-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  max-width: 900px;
+}
+
+.settings-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.settings-card { margin-bottom: 12px; min-width: 0; }
+.settings-card:last-of-type { margin-bottom: 0; }
+
+.settings-card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding-bottom: 13px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid var(--line-1);
+}
+.settings-card-heading > svg {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-top: 1px;
+  padding: 6px;
+  box-sizing: content-box;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--fg-1);
+}
+.settings-card-heading > div { min-width: 0; }
+.settings-card-heading h2 { font-size: 14px; line-height: 1.35; }
+.settings-card-heading p {
+  margin-top: 3px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+
+/* 字段行：一行一个开关或一个数字，右侧控件固定不换行 */
+.settings-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line-1);
+}
+.settings-field:last-child { border-bottom: 0; padding-bottom: 0; }
+.settings-field > span,
+.settings-field > label { min-width: 0; flex: 1; }
+.settings-field strong { display: block; font-size: 12.5px; font-weight: 560; line-height: 1.45; color: var(--fg-0); }
+.settings-field small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+label.settings-field { cursor: pointer; }
+@media (hover: hover) {
+  label.settings-field { border-radius: var(--r-sm); transition: background-color var(--dur-fast) var(--ease-snap); }
+  label.settings-field:hover { background: var(--accent-soft); }
+}
+
+/* 原生 checkbox 做成开关外观，保留 checkbox 语义（测试按 name 查询） */
+.settings-toggle {
+  appearance: none;
+  position: relative;
+  width: 38px;
+  height: 21px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--bg-4);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-base) var(--ease-out-expo),
+    border-color var(--dur-base) var(--ease-out-expo);
+}
+.settings-toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--fg-2);
+  transition:
+    transform var(--dur-base) var(--ease-spring),
+    background-color var(--dur-base) var(--ease-out-expo);
+}
+.settings-toggle:hover:not(:disabled) { border-color: var(--line-3); }
+.settings-toggle:checked { background: var(--accent); border-color: transparent; }
+.settings-toggle:checked::after { background: var(--accent-ink); transform: translateX(17px); }
+.settings-toggle:active:not(:disabled)::after { transform: scaleX(1.12); }
+.settings-toggle:checked:active:not(:disabled)::after { transform: translateX(17px) scaleX(1.12); }
+.settings-toggle:disabled { opacity: .45; cursor: not-allowed; }
+.settings-fieldset:disabled .settings-toggle { cursor: progress; }
+
+.settings-number { width: 170px; flex: none; min-width: 0; }
+.settings-number input {
+  width: 100%;
+  font-family: var(--mono-font);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.settings-number input[aria-invalid="true"] { border-color: var(--err-line); background: var(--err-soft); }
+.settings-number .settings-hint {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--mono-font);
+  font-size: 10px;
+  color: var(--fg-2);
+  font-variant-numeric: tabular-nums;
+}
+.settings-field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 5px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--err);
+  overflow-wrap: anywhere;
+  animation: m-rise var(--dur-fast) var(--ease-out-expo) both;
+}
+.settings-field-error > svg { flex: none; margin-top: 2px; }
+
+/* 提示条：这里用中性底而不是琥珀 —— 它多数时候是"说明"而不是"警告" */
+.settings-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--fg-1);
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+  animation: m-rise var(--dur-base) var(--ease-out-expo) both;
+}
+.settings-note > svg { flex: none; margin-top: 2px; color: var(--fg-2); }
+
+.settings-save-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--err-line);
+  border-radius: var(--r-sm);
+  background: var(--err-soft);
+  color: var(--err);
+  font-size: 11.5px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  animation: m-rise var(--dur-base) var(--ease-out-expo) both;
+}
+.settings-save-error > svg { flex: none; margin-top: 1px; }
+.settings-save-error > span { min-width: 0; }
+
+/* 底部状态条 + 操作 */
+.settings-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-1);
+}
+.settings-footer > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 18px;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--fg-2);
+  overflow-wrap: anywhere;
+  transition: color var(--dur-base) var(--ease-out-expo);
+}
+.settings-status-dot {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--fg-3);
+  transition: background-color var(--dur-base) var(--ease-out-expo), box-shadow var(--dur-base) var(--ease-out-expo);
+}
+.settings-status-dirty { color: var(--warn); }
+.settings-status-dirty .settings-status-dot { background: var(--warn); box-shadow: 0 0 0 3px var(--warn-soft); }
+.settings-status-saving { color: var(--fg-1); }
+.settings-status-saving .settings-status-dot { background: var(--fg-1); animation: m-pulse 1.2s var(--ease-out-expo) infinite; }
+.settings-status-saved { color: var(--ok); }
+.settings-status-saved .settings-status-dot { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+.settings-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+/* ── 2. API 接入 ──────────────────────────────────────────────────────────── */
+.connection-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.connection-feedback,
+.connection-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  font-size: 11.5px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  animation: m-rise var(--dur-base) var(--ease-out-expo) both;
+}
+.connection-feedback { border: 1px solid var(--ok-line); background: var(--ok-soft); color: var(--ok); }
+.connection-error { border: 1px solid var(--err-line); background: var(--err-soft); color: var(--err); }
+.connection-feedback > svg,
+.connection-error > svg { flex: none; margin-top: 1px; }
+
+.connection-card { min-width: 0; }
+.connection-card-heading {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+  row-gap: 8px;
+  margin-bottom: 14px;
+}
+.connection-card-heading > div { min-width: 0; flex: 1; }
+.connection-card-heading h2 { font-size: 13.5px; line-height: 1.35; }
+.connection-card-heading p {
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+.cx-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--fg-1);
+}
+.cx-icon-danger { border-color: var(--err-line); background: var(--err-soft); color: var(--err); }
+
+/* 凭据行：等宽输入 + 右侧按钮组 */
+.copy-field { display: flex; align-items: stretch; gap: 6px; flex-wrap: wrap; }
+.copy-field > .ui-button { flex: none; }
+.cx-field {
+  flex: 1 1 200px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+.cx-field:hover { border-color: var(--line-3); }
+.cx-field:focus-within { border-color: var(--fg-2); box-shadow: 0 0 0 3px var(--accent-soft); }
+.cx-field > svg {
+  flex: none;
+  color: var(--fg-3);
+  transition: color var(--dur-fast) ease, transform var(--dur-base) var(--ease-spring);
+}
+.cx-field:focus-within > svg { color: var(--fg-1); transform: scale(1.12); }
+.cx-field input {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none !important;
+  font-family: var(--mono-font);
+  font-size: 12px;
+  color: var(--fg-0);
+}
+.cx-field input:focus { box-shadow: none; }
+.cx-field input::placeholder { color: var(--fg-3); font-family: var(--font-sans); }
+.copy-field .cx-field input[readonly] { cursor: default; }
+
+/* 密钥显隐：揭开时内容淡入，暗示"刚从密码框变成明文" */
+@keyframes cx-reveal { from { opacity: .35; } to { opacity: 1; } }
+.cx-revealed { border-color: var(--line-3); background: var(--bg-1); }
+.cx-revealed input { animation: cx-reveal var(--dur-base) var(--ease-out-expo); }
+
+/* 复制成功：按钮转成对勾色并弹一下 */
+.cx-copied,
+.cx-copied:hover:not(:disabled) {
+  color: var(--ok) !important;
+  border-color: var(--ok-line) !important;
+  background: var(--ok-soft) !important;
+}
+.cx-copied { animation: m-pop 300ms var(--ease-spring); }
+
+/* 快速开始：终端代码块。浅色下也是深底 —— 代码块在纸面上是"另一种材质" */
+.cx-code {
+  position: relative;
+  margin: 0;
+  padding: 13px 15px 13px 30px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: #0a0a0c;
+  color: #d8d8dd;
+  font-family: var(--mono-font);
+  font-size: 11.5px;
+  line-height: 1.75;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  direction: ltr;
+  unicode-bidi: isolate;
+  scrollbar-width: thin;
+}
+.cx-code::before {
+  content: "$";
+  position: absolute;
+  left: 13px;
+  top: 13px;
+  color: #6a6a72;
+  font-weight: 600;
+  pointer-events: none;
+}
+.cx-code::selection { background: rgb(255 255 255 / 22%); color: #fff; }
+
+.connection-example { margin-top: 0; }
+
+/* 危险区：一层极薄的红色描边，不整块刷红 */
+.connection-danger { border-color: var(--err-line); }
+.connection-danger h2 { color: var(--err); }
+.connection-danger > .ui-button { flex: none; }
+.cx-danger-btn { color: var(--err) !important; border-color: var(--err-line) !important; }
+.cx-danger-btn:hover:not(:disabled) {
+  background: var(--err-soft) !important;
+  border-color: var(--err) !important;
+}
+.cx-danger-btn svg { transition: transform var(--dur-base) var(--ease-spring); }
+@media (hover: hover) {
+  .cx-danger-btn:hover:not(:disabled) svg { transform: rotate(-24deg); }
+}
+
+/* ── 3. EAC 渠道管理外层 ──────────────────────────────────────────────────── */
+.channel-summary-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 26px;
+  margin-bottom: 14px;
+  padding: 12px 15px;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+}
+.ch-metric { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ch-metric-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-sm);
+  background: var(--bg-1);
+  color: var(--fg-1);
+}
+.ch-metric-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ch-metric-label { font-size: 10.5px; color: var(--fg-2); overflow-wrap: anywhere; }
+.ch-metric-value {
+  font-family: var(--mono-font);
+  font-size: 18px;
+  font-weight: 560;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-0);
+}
+.ch-metric-value small { font-family: var(--font-sans); font-size: 11px; font-weight: 450; color: var(--fg-2); }
+.ch-skeleton {
+  display: inline-block;
+  width: 26px;
+  height: 13px;
+  vertical-align: middle;
+  border-radius: var(--r-xs);
+  background: var(--bg-4);
+  animation: m-pulse 1.4s var(--ease-out-expo) infinite;
+}
+
+.checkin-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 7px 12px;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-pill);
+  background: var(--bg-1);
+  font-size: 11px;
+  color: var(--fg-1);
+  white-space: nowrap;
+}
+.checkin-control .status-dot { animation: none; }
+
+/* 供应商卡片 */
+.provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+}
+.provider-card {
+  min-width: 0;
+  transition:
+    border-color var(--dur-base) var(--ease-out-expo),
+    box-shadow var(--dur-base) var(--ease-out-expo),
+    transform var(--dur-base) var(--ease-spring);
+}
+.provider-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.provider-card:focus-within { border-color: var(--line-3); }
+/* 供应商图标：几何与品牌色来自 magpie 内置图标集（见 provider-icons.ts）。
+   这里只给中性容器（底色/描边/圆角），图标本身保留品牌色 —— 品牌标志是
+   第三方资产，重上色既不合适也不可行：HuggingFace、腾讯云、Kiro 的层次
+   完全靠颜色区分，压成单色会抹成一块纯色。 */
+.provider-logo {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+.provider-logo .provider-glyph { display: block; width: 20px; height: 20px; }
+.provider-glyph-fallback {
+  font-family: var(--mono-font);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--fg-2);
+}
+.provider-counts { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--fg-2); }
+.provider-counts strong {
+  font-family: var(--mono-font);
+  font-weight: 560;
+  color: var(--fg-0);
+  font-variant-numeric: tabular-nums;
+}
+.provider-card .status-dot { animation: none; }
+.provider-manage { flex: none; }
+.provider-manage svg {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity var(--dur-base) var(--ease-out-expo), transform var(--dur-base) var(--ease-out-expo);
+}
+.provider-card:hover .provider-manage svg,
+.provider-manage:focus-visible svg { opacity: 1; transform: none; }
+@media (hover: none) {
+  .provider-manage svg { opacity: 1; transform: none; }
+}
+
+.channel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 38px 20px;
+  text-align: center;
+  color: var(--fg-2);
+  animation: m-rise var(--dur-slow) var(--ease-out-expo) both;
+}
+.channel-empty > svg { color: var(--fg-3); margin-bottom: 4px; }
+.channel-empty h2 { font-size: 13px; color: var(--fg-0); }
+.channel-empty p { font-size: 11.5px; }
+
+/* 渠道详情侧栏 */
+.provider-detail { min-width: 0; }
+.provider-detail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 10.5px;
+  color: var(--fg-2);
+}
+.channel-directory-name { min-width: 0; }
+.detail-provider-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: transparent;
+  color: var(--fg-2);
+  font-size: 11.5px;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  transition:
+    color var(--dur-fast) ease,
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+.detail-provider-link:hover { color: var(--fg-0); background: var(--bg-2); }
+.detail-provider-link.active { border-left-color: var(--fg-0); color: var(--fg-0); font-weight: 560; }
+.detail-security-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--fg-1);
+}
+.detail-security-note > svg { flex: none; margin-top: 1px; color: var(--fg-2); }
+
+/* ── 4. EAC 内嵌组件（client.js 的 .ofm_*）对齐控制台刻度 ──────────────────── */
+.ofm_root .ofm_btn {
+  min-height: 30px;
+  padding: 5px 11px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--bg-1);
+  color: var(--fg-1);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+.ofm_root .ofm_btn:hover:not(:disabled) { background: var(--bg-2); border-color: var(--line-3); color: var(--fg-0); }
+.ofm_root .ofm_btn:active:not(:disabled) { transform: scale(.97); }
+.ofm_root .ofm_btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.ofm_root .ofm_hero {
+  padding: 16px 18px;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+  background: var(--bg-1);
+}
+.ofm_root .ofm_hero h3 { margin: 0 0 4px; font-size: 13.5px; font-weight: 600; color: var(--fg-0); }
+.ofm_root .ofm_row { padding: 9px 0; border-top: 1px solid var(--line-1); }
+.ofm_root .ofm_row:first-of-type { border-top: 0; }
+.ofm_root .ofm_row label { font-size: 11.5px; color: var(--fg-1); }
+.ofm_root .ofm_row input[type="checkbox"] { width: 15px; height: 15px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.ofm_root .ofm_note { color: var(--fg-2); line-height: 1.7; }
+.ofm_root .ofm_foldtoggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-left: -8px;
+  padding: 3px 8px;
+  border-radius: var(--r-xs);
+  transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+.ofm_root .ofm_foldtoggle:hover { background: var(--bg-2); color: var(--fg-0); }
+.ofm_root .ofm_foldtoggle svg { transition: transform var(--dur-base) var(--ease-spring); }
+.ofm_root .ofm_foldtoggle[data-open="true"] svg { transform: rotate(90deg); }
+
+.ofm_root .ofm_card,
+.ofm_root .ofm_hero,
+.ofm_root .ofm_glass,
+.ofm_root .ofm_ann,
+.ofm_root .ofm_newsitem,
+.ofm_root .ofm_stat,
+.ofm_root .ofm_chan { border-radius: var(--r-md); }
+.ofm_root .ofm_modal { border-radius: var(--r-lg); }
+.ofm_root .ofm_toast { border-radius: var(--r-sm); }
+.ofm_root .ofm_chanlogo { border-radius: var(--r-sm); }
+.ofm_root .ofm_chanstate {
+  border-radius: var(--r-xs);
+  background: var(--bg-2);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+}
+@keyframes ofm-fold-unfold { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.ofm_root .ofm_chanfold {
+  transform-origin: top center;
+  animation: ofm-fold-unfold var(--dur-base) var(--ease-out-expo);
+}
+.ofm_root .ofm_mono,
+.ofm_root .ofm_id { font-family: var(--mono-font); }
+.ofm_root .ofm_num,
+.ofm_root .ofm_kpivalue,
+.ofm_root .ofm_credittotal { font-variant-numeric: tabular-nums; }
+
+/* ── 5. 应用更新（desktop-update 复用 settings-card 骨架） ─────────────────── */
+.desktop-update-browser { display: flex; flex-direction: column; gap: 14px; }
+.desktop-update-versions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  padding: 4px 0 18px;
+}
+.desktop-update-versions > div { display: flex; flex-direction: column; gap: 4px; min-width: 132px; }
+.desktop-update-versions small { font-size: 10.5px; color: var(--fg-2); }
+.desktop-update-versions strong {
+  font-family: var(--mono-font);
+  font-size: 20px;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-0);
+}
+.desktop-update-versions span { font-size: 11.5px; color: var(--fg-1); }
+.desktop-update-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.desktop-update-progress { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; font-size: 11.5px; }
+.desktop-update-progress > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.desktop-update-progress progress {
+  width: 100%;
+  height: 6px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--bg-4);
+  overflow: hidden;
+  appearance: none;
+}
+.desktop-update-progress progress::-webkit-progress-bar { background: var(--bg-4); border-radius: inherit; }
+.desktop-update-progress progress::-webkit-progress-value {
+  background: var(--fg-0);
+  border-radius: inherit;
+  transition: width var(--dur-base) var(--ease-out-expo);
+}
+.desktop-update-progress progress::-moz-progress-bar { background: var(--fg-0); border-radius: inherit; }
+.desktop-update-notes {
+  max-height: 400px;
+  overflow: auto;
+  font-size: 11.5px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--fg-1);
+}
+
+/* ── 6. 响应式 ────────────────────────────────────────────────────────────── */
+@media (max-width: 950px) {
+  .provider-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .settings-field { gap: 14px; }
+  .settings-number-field { align-items: stretch; flex-direction: column; gap: 8px; }
+  .settings-number { width: 100%; }
+  .settings-footer { align-items: stretch; flex-direction: column; }
+  .settings-actions { width: 100%; }
+  .settings-actions > button { flex: 1; }
+  .checkin-control { margin-left: 0; width: 100%; justify-content: space-between; }
+  .channel-summary-strip { gap: 10px 18px; }
+  .provider-grid { grid-template-columns: minmax(0, 1fr); }
+  .copy-field > .ui-button { flex: 1 1 auto; }
+  .desktop-update-versions { gap: 16px; }
+}
+
+@media (max-width: 430px) {
+  .cx-code { font-size: 11px; padding-left: 26px; }
+  .cx-code::before { left: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-note,
+  .settings-save-error,
+  .settings-field-error,
+  .connection-feedback,
+  .connection-error,
+  .channel-empty,
+  .cx-revealed input,
+  .cx-copied,
+  .ch-skeleton,
+  .settings-status-saving .settings-status-dot,
+  .ofm_root .ofm_chanfold {
+    animation: none !important;
+  }
+  .settings-toggle::after,
+  .cx-field > svg,
+  .provider-manage svg,
+  .cx-danger-btn svg { transition: none !important; }
+  .settings-toggle:active:not(:disabled)::after { transform: none !important; }
+  .settings-toggle:checked:active:not(:disabled)::after { transform: translateX(17px) !important; }
+}
+
+/* The free lane's exit pool. The textarea takes the full field width because an
+   exit list is one address per line; the list of live exits is monospace so the
+   masked labels line up. */
+.settings-textarea {
+  width: 100%;
+  min-height: 84px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.settings-textarea:focus-visible {
+  outline: 2px solid var(--ring, var(--accent));
+  outline-offset: 1px;
+}
+
+.settings-exit-list {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-exit-list code {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--surface-2, rgba(127, 127, 127, 0.12));
+  font-size: 12px;
+}

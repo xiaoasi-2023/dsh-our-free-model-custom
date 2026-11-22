@@ -1,0 +1,58 @@
+node_modules/
+dist/
+*.log
+*.tgz
+.DS_Store
+Thumbs.db
+
+# Local verification scratch: isolated DSH_HOME, app output, profile backups.
+.verify/
+.aio-backup/
+.probe-*
+
+# Editor
+.idea/
+.vscode/
+*.swp
+
+# Co-paid lane minting: plaintext lives outside the repo.
+scripts/eac-vault-mint.mjs
+
+# Gateway deployment secrets (self-hosted form) never get committed.
+worker/.env
+c3099.txt
+stats.json
+
+# 本地代码索引及工具状态，不进入仓库。
+.aoci/
+/aoci.txt
+/aoci.code.txt
+/aoci.meta.txt
+
+# PR 审查截图保留在本地，按需作为 PR 附件上传。
+.pr-screenshots/
+
+# AOCI agent host integration (machine-bound; do not commit)
+.codex/config.toml
+.codex/config.toml.backup.*
+
+# Desktop build artifacts
+packages/desktop/src-tauri/target/
+packages/desktop/src-tauri/resources/
+packages/desktop/src-tauri/.node-license-cache/
+packages/desktop/node_modules/
+
+_audit/
+
+# Upstream OpenCode sources fetched by scripts/fetch-opencode-assets.mjs. They are
+# inputs to the asset build, not part of the repository: the generated assets in
+# src/o2a/assets/ are what ships, and docs/opencode-assets.md records their
+# provenance and per-file digests.
+.build-cache/
+
+# 上游引擎二进制（97MB，不在插件发布文件列表内；运行时用 src/engine-parts 分片）
+vendor/magpie/bin/
+
+# 预打包产物：由 vendor/channel-pack/src 经 scripts/build-channel-pack.mjs 重建。
+# 其中内嵌上游 Gemini 渠道的公开 OAuth 客户端凭据，GitHub 推送保护会拦截。
+vendor/channel-pack/pack.js

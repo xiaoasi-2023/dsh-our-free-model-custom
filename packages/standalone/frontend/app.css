@@ -1,0 +1,76 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Our Free Model · 独立端控制台 — 入口样式表
+
+   视觉系统在 system/ 下：
+     tokens.css    唯一令牌源（黑白主调 + 语义色，深/浅双主题）
+     motion.css    动效原语、装饰层、三层闸门、主题扩散
+     shell.css     骨架、侧边栏、顶栏、UI 原语、登录页、载入页
+     overview.css  概览页
+     compat.css    各页共用的通用类（页头 / 卡片页脚 / 文字按钮）
+
+   页面样式表按需加载或直接引入，见下方 @import。
+
+   本文件原先有 5266 行，是历次迭代的追加日志：深色被重写了九遍，
+   最后两处还用 !important 覆盖自定义属性；同时有 5000 行装饰规则被
+   workbench.css 的反装饰层静默关闭，从未真正显示。新系统接管后，
+   这些死代码整体退役。
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import "tailwindcss" source(none);
+
+@import "./system/tokens.css";
+@import "./system/motion.css";
+@import "./system/shell.css";
+@import "./system/overview.css";
+@import "./system/compat.css";
+
+/* 各页面自己的样式表由各自的模块 import：
+     app.tsx            → workbench.css / plugins.css / plugin-page.css
+     connection.tsx     → settings.css（与「服务设置」共用同一套表单语言）
+     settings.tsx       → settings.css
+     desktop-update.tsx → settings.css / desktop-update.css
+     routing.tsx        → routing.css
+     workspace.tsx      → workspace.css
+     disclaimer-dialog  → disclaimer.css
+     models/usage       → 各自按需分包
+   不在这里 @import 它们，否则同一份 CSS 会既进主包又进分包。 */
+
+/* ── 布局兜底 ──────────────────────────────────────────────────────────────
+   所有页面容器的最小宽度约束集中在这里，避免各页各写一份。 */
+.wb-page,
+.pd-page,
+.lib-page,
+.rt-page,
+.ws-page,
+.settings-browser,
+.usage-browser,
+.connection-browser,
+.desktop-update-browser,
+.plugins-page,
+.plugin-page {
+  min-width: 0;
+}
+
+/* 所有页面的一级标题统一节奏，避免各页各写一套 */
+.wb-heading h1,
+.plugins-header h1,
+.plugin-page-header h1,
+.settings-browser h1,
+.usage-browser h1,
+.connection-browser h1,
+.desktop-update-browser h1,
+.rt-page h1 {
+  margin: 4px 0 3px;
+}
+
+/* 长标识符永远不许撑破容器 */
+.wb-page :is(code, pre, dd, small),
+.pd-page :is(code, pre, dd, small),
+.lib-page :is(code, pre, dd, small),
+.rt-page :is(code, pre, dd, small),
+.settings-browser :is(code, pre),
+.usage-browser :is(code, pre),
+.plugins-page :is(code, pre) {
+  overflow-wrap: anywhere;
+}
+

@@ -1,0 +1,15 @@
+# dsh-our-free-model bundle patch.
+#
+# 一行 insert 即挂载 Host 半身；浏览器半身由 package.json 的 dsh.client 声明，
+# 并绑定在 name 为裸包名的这一行上（子路径行不会携带半身）。
+#
+# CUSTOM FORK: the `distribution: managed` config stands the self-updater, the
+# announcement feed and the hot reload down at install time (see
+# src/updater.js / index.js), so an upstream or third-party manifest can never
+# overwrite this customized build. The fork's own publishing path replaces this
+# once the update chain is stood up.
+- insert:
+    - id: our-free-model
+      name: 'dsh-our-free-model'
+      config:
+        distribution: managed
