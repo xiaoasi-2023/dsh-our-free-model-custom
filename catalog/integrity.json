@@ -279,13 +279,13 @@
     },
     {
       "path": "src/providers/index.js",
-      "size": 9785,
-      "sha256": "a294b96d5cadb99e8c71293a255add117ac54f528e02a7b8e92579833c0d09ef"
+      "size": 10266,
+      "sha256": "0b6b750fe0d4f919cccdb3a75828d996675497ea4355736e219ba826dcf16e73"
     },
     {
       "path": "src/providers/registry.json",
-      "size": 139885,
-      "sha256": "34e0759a95af12f1983d51004ff8ff303e7dbdf43ec5e6f5fe0ec70e50c7b05e"
+      "size": 140675,
+      "sha256": "9802d0ad2625cb2d6a431f64f2276602bffe4330ca7535a4ef1b6a207380c771"
     },
     {
       "path": "src/recovery.js",

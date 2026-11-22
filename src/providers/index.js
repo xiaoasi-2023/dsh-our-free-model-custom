@@ -64,9 +64,17 @@ export const PROVIDERS = deepFreeze(JSON.parse(fs.readFileSync(REGISTRY_FILE, 'u
  * `registry.json` keeps one decision point — `src/magpie-policy.js` — so the
  * embedded engine and this directory cannot disagree, and a later registry
  * refresh cannot quietly reintroduce a channel the product does not carry.
+ *
+ * CUSTOM FORK: rows whose `source` is `external` are declarations, not offers.
+ * WorkBuddy is one: its endpoint is a per-process loopback shim with a bearer
+ * minted at random on every start (`dsh-connect-workbuddy` registers it as a
+ * DSH-native LLM provider itself), so this lane could not serve it even with a
+ * key pasted in. The row stays in the file so a reader can see where the
+ * channel comes from, but it is not offered here.
  */
 export const OFFERED_PROVIDERS = Object.freeze(PROVIDERS.filter(provider =>
-  !isDeniedChannel(provider.id, `${provider.name} ${provider.notes ?? ''} ${provider.baseUrl ?? ''}`)))
+  provider.source !== 'external'
+  && !isDeniedChannel(provider.id, `${provider.name} ${provider.notes ?? ''} ${provider.baseUrl ?? ''}`)))
 
 /** Every offered registry id — the set `parseProviderModelId` validates prefixes against. */
 export const PROVIDER_IDS = Object.freeze(new Set(OFFERED_PROVIDERS.map(provider => provider.id)))

@@ -5150,5 +5150,22 @@
     "local": false,
     "source": "custom",
     "sourceUrl": "https://github.com/Ebony-Vinyl/dsh-our-free-model/blob/main/docs/provider-compatibility.md"
+  },
+  {
+    "id": "workbuddy",
+    "name": "WorkBuddy（外部插件提供）",
+    "category": "oauth",
+    "auth": {
+      "kind": "oauth",
+      "env": "",
+      "url": "https://github.com/dingminhua/dsh-connect-workbuddy"
+    },
+    "baseUrl": "",
+    "format": "openai-chat",
+    "models": [],
+    "notes": "本定制版不内建 WorkBuddy：国内版（workbuddy）与国际版（workbuddy-ai）由独立插件 dsh-connect-workbuddy 以 DSH 原生 LLM provider 的形式提供，登录、账号池、积分与模型目录均由该插件管理。此处仅作声明，便于在本目录中说明该渠道的来源；本插件的聚合渠道不会也不应代理它。",
+    "website": "https://github.com/dingminhua/dsh-connect-workbuddy",
+    "local": false,
+    "source": "external"
   }
 ]
