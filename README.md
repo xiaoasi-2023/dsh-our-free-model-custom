@@ -5,6 +5,22 @@
 
 **简体中文** | [English](README_EN.md)
 
+> ## 🔧 这是自用定制版（Our Free Model · xiaoasi）
+>
+> 本仓库是 [上游项目](https://github.com/Ebony-Vinyl/dsh-our-free-model) 的个人定制分支，
+> 相对上游做了这些改动：接入自建 **Kiro 网关**聚合渠道、停用匿名免费车道、
+> 账号渠道裁剪为 **Qoder / TRAE / MiniMax / ZCode / Gemini** 五个、
+> 解封 WorkBuddy、更新链改为**自签名 fork**。
+>
+> **⚠️ 要改这个仓库的代码、发版或排错，先读
+> [docs/CUSTOM-MAINTENANCE.md](docs/CUSTOM-MAINTENANCE.md)** ——
+> 里面记了签名私钥的位置与禁忌、哪些文件不能提交、
+> 发版的完整命令、以及已知会踩的坑（pnpm 同版本不刷新、GitHub 推送保护、
+> TLS 中断、重启覆盖配置等）。
+>
+> 下面这部分是**上游原文档**，描述的是上游版本的行为；
+> 与本定制版的差异以 `docs/CUSTOM-MAINTENANCE.md` 的 §4 为准。
+
   <img alt="许可证" src="https://img.shields.io/badge/license-MIT-263146?style=flat-square">
   <img alt="零依赖" src="https://img.shields.io/badge/dependencies-zero-4b6fff?style=flat-square">
   <img alt="无构建步骤" src="https://img.shields.io/badge/build%20step-none-7da1de?style=flat-square">
