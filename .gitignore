@@ -56,3 +56,6 @@ vendor/magpie/bin/
 # 预打包产物：由 vendor/channel-pack/src 经 scripts/build-channel-pack.mjs 重建。
 # 其中内嵌上游 Gemini 渠道的公开 OAuth 客户端凭据，GitHub 推送保护会拦截。
 vendor/channel-pack/pack.js
+
+# 诊断期留下的污染构建产物，仅本地参考
+vendor/channel-pack/pack.polluted-backup.js
