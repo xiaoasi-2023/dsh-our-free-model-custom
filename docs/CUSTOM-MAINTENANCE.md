@@ -21,7 +21,7 @@
 | 用户数据 | `C:\Users\xiaoasi\.dsh\our-free-model\`（settings.json / catalog.json 等） |
 | 打包产物 | `C:\Users\xiaoasi\.dsh\profiles\desktop\vendor\dsh-our-free-model-<版本>.tgz` |
 | Kiro 网关 | https://kiro.xiaoasi.xyz/v1 |
-| WorkBuddy 插件 | `dsh-connect-workbuddy`（独立插件，非本仓库代码） |
+| WorkBuddy 渠道 | **本插件内建**（`src/workbuddy.js`）；独立插件 `dsh-connect-workbuddy` 可选，不再是必需 |
 
 ---
 
@@ -217,17 +217,19 @@ git config core.compression 9
 
 | 模块 | 改动 | 目的 |
 |---|---|---|
-| `src/providers/registry.json` | 新增 `kiro` 条目（公网地址 + 8 模型 + modelsUrl）；末尾新增 `workbuddy` 声明条目（`source: external`，models 为空） | Kiro 网关作为聚合渠道；WorkBuddy 只做来源声明 |
-| `src/providers/index.js` | `OFFERED_PROVIDERS` 过滤掉 `source === 'external'` | 让 workbuddy 有声明但不可选，避免用户填无效 Key |
+| `src/providers/registry.json` | 新增 `kiro` 条目（公网地址 + 8 模型 + modelsUrl）；`workbuddy` / `workbuddy-global` 两条内建渠道（`auth.kind: vault`，19 个模型） | Kiro 网关 + WorkBuddy 并入 |
+| `src/providers/index.js` | `AUTH_KINDS` 增加 `vault`；`OFFERED_PROVIDERS` 过滤 `source === 'external'` 的纯声明行 | 支撑 vault 渠道 |
 | `src/aggregate.js` | 无改动（复用上游聚合逻辑） | — |
 | `src/adapter.js` | ① 匿名免费车道硬拒（`CONFIG_DISABLED`，中文提示）② 429 时追加 Kiro 充值引导 | 停用免费车道；额度用尽给指引 |
 | `src/store.js` | `hideFreeModels: true`；默认 combo 改 `combo:recommended-kiro`（kiro/auto → claude-sonnet-4.5 → deepseek-3.2） | 默认走 Kiro |
 | `src/magpie-policy.js` | 只保留华为云排除（WorkBuddy 不再被拒） | 解封 WorkBuddy |
-| `src/disclaimer.js` | 版本 3 → **4**，8 个 section（新增「WorkBuddy 由独立插件提供」「只保留五个账号渠道」） | 变更说明 |
+| `src/disclaimer.js` | 版本 4，8 个 section | 变更说明 |
 | `src/updater.js` | `REPO` → `xiaoasi-2023/dsh-our-free-model-custom` | 自签名更新链 |
 | `src/plugins.js` | `CHANNEL_PACK_CHANNELS` 裁到 5 个；`CHANNEL_PACK_DISABLED` 扩到 6 个 | 渠道裁剪 |
 | `client.js` | `CHANNEL_PROVIDERS` / `CHANNEL_CREDITS` 裁到 5 个；品牌名改 `Our Free Model · xiaoasi` | 渠道裁剪 + 品牌 |
-| `index.js` | `pack.apply()` 传 `disabledChannels: ['lobsterai','qodercn','cline','loomy','raccoon']` | 渠道裁剪生效点 |
+| `index.js` | `pack.apply()` 传 `disabledChannels`；新增 WorkBuddy 登录 4 个 API 路由 | 渠道裁剪 + 内建登录 |
+| `client.js` | `CHANNEL_PROVIDERS` 裁到 5 个；品牌名；聚合页新增 WorkBuddy 登录卡片 | 渠道裁剪 + 内建登录 |
+| `src/workbuddy.js` | **新增**：WorkBuddy 凭据读取 / 目录 / 对话 / 扫码登录 | WorkBuddy 内建 |
 | `vendor/channel-pack/src/index.ts` | `apply()` 新增 `disabledChannels` 配置 + `channelDisabled()` 守卫；5 个 adapter 注册加条件 + `modelAdapters` 改条件展开 | 渠道裁剪实现 |
 | `locale/zh.json`, `locale/en.json` | 标题改带 `· xiaoasi` | 品牌 |
 | `package.json` 等 5 处 | 版本 2.9.0 → **2.9.1** | 版本 |
@@ -245,38 +247,71 @@ git config core.compression 9
 
 ---
 
-## 5. WorkBuddy 为什么没有「接入聚合渠道」
+## 5. WorkBuddy 是内建渠道，不是外部插件
 
-**结论：技术上做不到，当前形态已经是最合理的。**
+**结论：本插件自己实现了 WorkBuddy 的完整能力，安装这一个包就够了。**
 
-`dsh-connect-workbuddy`（独立插件，作者 dingminhua，MIT）内部确实有个 OpenAI 兼容端点：
+### 5.1 为什么不能「直接接入」别的插件的端点
 
-- `GET  /v1/models`
-- `POST /v1/chat/completions`
-- Bearer 鉴权、只绑回环
-
+`dsh-connect-workbuddy`（独立插件，作者 dingminhua，MIT）内部确实有个 OpenAI 兼容端点，
 但两个关键值是**每进程随机**的：
 
 - 端口：`server.listen(0, '127.0.0.1')` —— 内核分配
 - Bearer：`const SHARED_SECRET = randomBytes(32).toString('base64url')` —— 只在内存里
 
-所以 OFM 聚合目录**没法**静态写一条 registry 记录去访问它（写完下次启动端口就变了）。
+所以聚合目录**没法**静态写一条 registry 记录去访问它（写完下次启动端口就变了）。
+这也是为什么早先的做法只能「声明但不提供」。
 
-而且它**已经**通过 `ctx.llm.registerAdapter()` 注册成 DSH 原生 LLM provider
-（见 WorkBuddy `lib/index.js` 里 `registerAdapter([WORKBUDDY_PROVIDER], ...)`），
-并且 profile 的 `cordis.patch.yml` 里 `agent-default-model` 就是：
+### 5.2 现在怎么做的：读协议、自己重写
 
-```yaml
-- id: agent-default-model
-  config:
-    provider: workbuddy
-    model: deepseek-v4.1-flash
+我们没有复制它的代码，而是**读懂上游协议后在 `src/workbuddy.js` 里重新实现**。
+WorkBuddy 真正的上游是两个普通 HTTP 端点（2026-11-24 实测）：
+
+```
+GET  {chatBase}/v2/enterprises/personal/models   -> 模型目录 + 积分倍率
+POST {chatBase}/v2/chat/completions              -> 标准 OpenAI SSE
 ```
 
-**它本来就已经是默认模型** —— 完全可用，不需要再「接进」什么地方。
+| 区域 | chatBase | 计费域 |
+|---|---|---|
+| 国内版 | `https://copilot.tencent.com` | `www.codebuddy.cn` |
+| 国际版 | `https://www.workbuddy.ai` | `www.workbuddy.ai` |
 
-所以我们的处理是：registry 里加**声明**（让人查得到来源），但
-`OFFERED_PROVIDERS` 排除它（防止有人以为能在聚合页填 Key 用它）。
+凭据是本机已登录账号的 OAuth token，落在
+`$DSH_HOME/workbuddy-vault/<region>/<accountId>.json`（accessToken / refreshToken /
+expiresAt / account）。**读这个文件**意味着：用户只要在任一插件登录过，这里立刻可用。
+
+实现清单：
+
+| 文件 | 内容 |
+|---|---|
+| `src/workbuddy.js` | 凭据读取、目录拉取、模型归一化、**扫码登录握手** |
+| `src/providers/registry.json` | `workbuddy`（19 个模型）/ `workbuddy-global` 两条渠道 |
+| `src/aggregate.js` | 支持 `auth.kind: 'vault'`（凭据来自文件而非粘贴的 Key） |
+| `index.js` | 4 个登录 API：`status` / `login/start` / `login/poll` / `logout` |
+| `client.js` | 聚合渠道页的 WorkBuddy 登录卡片（扫码 + 自动轮询 + 退登） |
+
+### 5.3 登录握手（自己实现的）
+
+三步，全部在 `src/workbuddy.js`：
+
+1. `POST {billing}/v2/plugin/auth/state?platform=workbuddy` → 拿 `state` 和授权 URL
+2. 用户在浏览器扫码/确认
+3. `GET {billing}/v2/plugin/auth/token?state={state}` → 拿 accessToken / refreshToken
+   → 再 `GET /v2/plugin/account` 取昵称 → 写入 vault（0600 权限）
+
+会话只存在进程内存（`loginSessions` Map），重启即失效——半截的握手留在磁盘上没有意义。
+
+### 5.4 与独立插件的关系
+
+两者**互不冲突**：它们读同一个 vault、连同一个上游，但各自独立。
+装了本插件就已经有 WorkBuddy 全部能力（模型可选、能对话、能扫码登录），
+独立插件可以卸掉。
+
+**但注意**：独立插件负责**自动续期**（token 快过期时自动换新）。
+本插件目前只做「读取 + 登录」，还没做 refresh。当前 token 有效期约 27 天，
+到期前在 OFM 的 WorkBuddy 卡片里重新扫码即可。要彻底不依赖它，
+下一步需要在 `src/workbuddy.js` 里补 refreshToken 流程。
 
 ---
 
@@ -288,7 +323,11 @@ workspace 根目录留了一套验证脚本，改完代码可以随时跑：
 |---|---|---|
 | `verify-phase1.mjs` | Kiro 聚合目录构建、免费车道隐藏逻辑、默认 combo | 11 |
 | `verify-phase2.mjs` | 渠道裁剪（列表 / bundle 守卫 / host 传参） | 20 |
-| `verify-phase3.mjs` | WorkBuddy 声明存在且不被聚合提供 | 9 |
+| `verify-phase3.mjs` | WorkBuddy 是内建渠道（声明、vault 凭据、聚合行、无 vendored 代码） | 20 |
+| `verify-workbuddy-module.mjs` | `src/workbuddy.js`：纯函数 + 真实目录 + 真实对话 | 24 |
+| `verify-workbuddy-lane.mjs` | WorkBuddy 走聚合渠道的端到端（含真实流式对话） | 12 |
+| `verify-workbuddy-login.mjs` | 扫码登录握手（真实拿到授权 URL） | 8 |
+| `verify-workbuddy-merged.mjs` | 用真实磁盘 settings 验收合并结果 | 17 |
 | `verify-real-settings.mjs` | 用**真实磁盘 settings** 驱动运行时（模型选择器同款数据源） | 17 |
 | `verify-kiro-real.mjs` | **真实网关**拉模型 + 流式对话 + 坏 Key 401 | 11 |
 | `verify-manifest.mjs` | 本地 manifest 验签 | — |
