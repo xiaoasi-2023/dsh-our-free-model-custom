@@ -816,6 +816,21 @@ window.__ModuleLoader__.load({
         'nav.tab.routing': '路由',
         'agg.title': '聚合渠道',
         'agg.sub': '第三方提供商',
+        'wb.title': 'WorkBuddy 登录',
+        'wb.hint': '扫码一次即可，无需填 Key',
+        'wb.signIn': '扫码登录',
+        'wb.signingIn': '登录中…',
+        'wb.starting': '正在获取…',
+        'wb.signOut': '退出登录',
+        'wb.signedIn': '登录成功',
+        'wb.signedOut': '已退出登录',
+        'wb.notSignedIn': '尚未登录',
+        'wb.account': '账号 {name}',
+        'wb.expires': '凭据到期',
+        'wb.waiting': '请在弹出的页面完成扫码或确认；完成后这里会自动刷新。',
+        'wb.openPage': '打开授权页面',
+        'wb.expired': '登录已超时，请重新发起',
+        'wb.failed': '登录未完成',
         'agg.registryCount': '注册表 {n} 家',
         'agg.configuredCount': '已配置 {n} 家',
         'agg.addProvider': '添加提供商',
@@ -1776,6 +1791,21 @@ window.__ModuleLoader__.load({
         'nav.tab.routing': 'Routing',
         'agg.title': 'Aggregate providers',
         'agg.sub': 'Third-party providers',
+        'wb.title': 'WorkBuddy sign-in',
+        'wb.hint': 'scan once, no key needed',
+        'wb.signIn': 'Sign in',
+        'wb.signingIn': 'Signing in…',
+        'wb.starting': 'Starting…',
+        'wb.signOut': 'Sign out',
+        'wb.signedIn': 'Signed in',
+        'wb.signedOut': 'Signed out',
+        'wb.notSignedIn': 'Not signed in',
+        'wb.account': 'account {name}',
+        'wb.expires': 'credential expires',
+        'wb.waiting': 'Finish the scan or confirmation in the page that opened; this card refreshes itself.',
+        'wb.openPage': 'Open the authorization page',
+        'wb.expired': 'The sign-in timed out; start again',
+        'wb.failed': 'The sign-in did not complete',
         'agg.registryCount': '{n} in the registry',
         'agg.configuredCount': '{n} configured',
         'agg.addProvider': 'Add provider',
@@ -7142,6 +7172,106 @@ window.__ModuleLoader__.load({
      * derivation — and every write asks the shell to re-read it, because saving a
      * provider changes what the model picker offers.
      */
+    /**
+     * WorkBuddy sign-in card.
+     *
+     * CUSTOM FORK: this channel's credential is an OAuth token, so the card runs
+     * a browser handshake rather than asking for a key. Two steps, matching the
+     * three host routes: start (get a URL to open) then poll until it completes.
+     *
+     * The polling loop is deliberately bounded — a forgotten tab must not leave a
+     * timer running for the life of the page. The upstream window is 10 minutes;
+     * we stop a little earlier so the last poll is not the one that races expiry.
+     */
+    function WorkBuddyLoginCard({ t, summary }) {
+      const status = usePanel(() => api('/workbuddy/status'), [])
+      const [session, setSession] = useState(null)
+      const [phase, setPhase] = useState('idle')
+      const [error, setError] = useState('')
+      const timer = useRef(undefined)
+
+      const stopPolling = () => {
+        if (timer.current !== undefined) { clearTimeout(timer.current); timer.current = undefined }
+      }
+      useEffect(() => stopPolling, [])
+
+      const start = async region => {
+        setError(''); setPhase('starting')
+        try {
+          const started = await post('/workbuddy/login/start', { region })
+          if (started?.error !== undefined) { setError(started.error); setPhase('idle'); return }
+          setSession({ ...started, region })
+          setPhase('waiting')
+          // Open the authorization page. A blocked popup is not fatal: the URL is
+          // rendered as a link beside the card, so the user can click it.
+          try { window.open(started.verificationUri, '_blank', 'noopener') } catch { /* link remains */ }
+          schedulePoll(started.loginId, region, Date.now() + 600_000)
+        } catch (problem) {
+          setError(String(problem?.message ?? problem)); setPhase('idle')
+        }
+      }
+
+      const schedulePoll = (loginId, region, deadline) => {
+        stopPolling()
+        timer.current = setTimeout(async () => {
+          if (Date.now() > deadline) { setPhase('idle'); setError(t('wb.expired')); return }
+          try {
+            const result = await post('/workbuddy/login/poll', { loginId, region })
+            if (result?.done === true) {
+              stopPolling()
+              if (result.account !== undefined) {
+                setPhase('idle'); setSession(null)
+                status.reload()
+                summary?.reload?.()
+                showToast({ title: t('wb.signedIn'), body: result.account.nickname ?? '', holdMs: 4000 })
+              } else {
+                setPhase('idle'); setError(result.error ?? t('wb.failed'))
+              }
+              return
+            }
+          } catch { /* a transient poll error simply retries */ }
+          schedulePoll(loginId, region, deadline)
+        }, 2500)
+      }
+
+      const signOut = async region => {
+        await post('/workbuddy/logout', { region })
+        status.reload(); summary?.reload?.()
+        showToast({ title: t('wb.signedOut'), holdMs: 3200 })
+      }
+
+      const regions = status.data?.regions ?? []
+      return h('div', { className: 'ofm_panel' },
+        h('div', { className: 'ofm_paneltitle' }, t('wb.title'), h('span', { className: 'ofm_sec_hint' }, t('wb.hint'))),
+        status.status === 'loading' ? h('div', { className: 'ofm_hint' }, t('loading')) : null,
+        status.status === 'error' ? h('div', { className: 'ofm_hint' }, t('agg.loadFailed')) : null,
+        status.status === 'ready'
+          ? regions.map(row => h('div', { key: row.region, className: 'ofm_wbrow' },
+            h('div', { className: 'ofm_wbrowmain' },
+              h('div', { className: 'ofm_wbrowname' }, row.label),
+              row.signedIn
+                ? h('div', { className: 'ofm_wbrowmeta' },
+                  t('wb.account').replace('{name}', row.nickname || '—'),
+                  row.expiresAt > 0 ? ` · ${t('wb.expires')} ${new Date(row.expiresAt * 1000).toLocaleDateString()}` : '')
+                : h('div', { className: 'ofm_wbrowmeta' }, t('wb.notSignedIn'))),
+            h('div', { className: 'ofm_wbrowactions' },
+              row.signedIn
+                ? h(Button, { kind: 'ghost', onClick: () => void signOut(row.region) }, t('wb.signOut'))
+                : h(Button, {
+                  kind: 'primary',
+                  disabled: phase !== 'idle',
+                  onClick: () => void start(row.region),
+                }, phase === 'starting' ? t('wb.starting') : t('wb.signIn')))))
+          : null,
+        phase === 'waiting' && session !== null
+          ? h('div', { className: 'ofm_wbwait' },
+            h('div', null, t('wb.waiting')),
+            h('a', { href: session.verificationUri, target: '_blank', rel: 'noopener noreferrer', className: 'ofm_link' }, t('wb.openPage')),
+            h(Button, { kind: 'ghost', onClick: () => { stopPolling(); setPhase('idle'); setSession(null) } }, t('agg.cancel')))
+          : null,
+        error !== '' ? h('div', { className: 'ofm_hint ofm_warn' }, error) : null)
+    }
+
     function AggregatePage(props) {
       const { t, summary } = props
       const panel = usePanel(() => api('/providers'), [])
@@ -7206,6 +7336,9 @@ window.__ModuleLoader__.load({
                 ? h(ProviderPicker, { t, registry, onPick: setDraft })
                 : null,
             h(Section, { title: t('agg.configuredTitle'), hint: t('agg.configuredHint') },
+              // CUSTOM FORK: WorkBuddy signs in with a browser handshake, so it
+              // needs its own card above the key-based directory.
+              h(WorkBuddyLoginCard, { t, summary }),
               h('div', { className: 'ofm_directorytools' },
                 h('label', null, t('agg.search'),
                   h('input', { className: 'ofm_input', type: 'search', value: query, placeholder: t('agg.search'), onChange: event => setQuery(event.target.value) })),

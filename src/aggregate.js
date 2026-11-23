@@ -53,6 +53,10 @@ import { CODE, UpstreamError, classifyFailure, classifyStreamFailure, readHead, 
 import { egressFetch } from './egress.js'
 import { chatEndpoint, defaultHeaders, getProvider, modelsEndpoint, providerModelId } from './providers/index.js'
 import { displayModelName } from './catalog.js'
+// CUSTOM FORK: the WorkBuddy channel's credential is an OAuth token this machine
+// already stores (written by whichever WorkBuddy sign-in ran), so the aggregate
+// lane resolves it from that file instead of from a pasted key.
+import { WORKBUDDY_ENDPOINTS, resolveWorkbuddyCredential } from './workbuddy.js'
 
 /** The channel tag every aggregate row carries, the way EAC and Kilo rows do. */
 export const AGGREGATE_CHANNEL = 'aggregate'
@@ -162,6 +166,14 @@ function effectiveChatUrl(provider, setting) {
 function authUsable(provider, setting) {
   if (provider.auth.kind === 'oauth' || provider.auth.kind === 'adc') return false
   if (provider.auth.kind === 'apiKey') return text(setting?.apiKey) !== ''
+  // CUSTOM FORK: a vault provider is usable exactly when this machine holds a
+  // credential for its region. A user who has not signed in gets no rows, which
+  // is the same rule as an empty API key — the picker never offers a channel the
+  // user cannot actually reach.
+  if (provider.auth.kind === 'vault') {
+    const region = text(provider.vaultRegion)
+    return region !== '' && resolveWorkbuddyCredential(region) !== null
+  }
   return true
 }
 
@@ -286,6 +298,21 @@ export function resolveProvider(config, providerId) {
   if (provider.auth.kind === 'apiKey' && apiKey === '') {
     throw new UpstreamError(`"${provider.name}" needs an API key: paste one in the aggregate settings (the provider issues them at ${provider.auth.url})`, CODE.credential)
   }
+  // CUSTOM FORK: a vault provider borrows the OAuth token this machine already
+  // stored rather than asking for a key. The token is read at resolve time, not
+  // cached, so a re-login takes effect on the next turn without a restart.
+  let credentialBearer = ''
+  if (provider.auth.kind === 'vault') {
+    const region = text(provider.vaultRegion)
+    const stored = region === '' ? null : resolveWorkbuddyCredential(region)
+    if (stored === null) {
+      throw new UpstreamError(`"${provider.name}" 尚未登录：请先在设置页的 WorkBuddy 分区完成扫码登录`, CODE.credential)
+    }
+    credentialBearer = text(stored.credential?.auth?.accessToken)
+    if (credentialBearer === '') {
+      throw new UpstreamError(`"${provider.name}" 的登录凭据已损坏，请重新登录`, CODE.credential)
+    }
+  }
   const baseUrl = effectiveBaseUrl(provider, setting)
   if (baseUrl === '') {
     throw new UpstreamError(`"${provider.name}" has no base URL of its own — set one in the aggregate settings`, CODE.client)
@@ -300,6 +327,7 @@ export function resolveProvider(config, providerId) {
   // The provider's own declared headers first, credential last: a provider that
   // ships a `user-agent` (kimchi) or an `anthropic-beta` (minimax-cn) keeps it.
   const headers = defaultHeaders(provider, apiKey)
+  if (credentialBearer !== '') headers.authorization = `Bearer ${credentialBearer}`
   if (headers['user-agent'] === undefined) headers['user-agent'] = USER_AGENT
   return {
     providerId: provider.id,

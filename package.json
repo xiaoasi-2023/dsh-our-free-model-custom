@@ -1,6 +1,6 @@
 {
   "name": "dsh-our-free-model",
-  "version": "2.9.1",
+  "version": "2.9.4",
   "private": true,
   "type": "module",
   "description": "Our Free Model · xiaoasi 定制版 — 在 dsh 里装上这个插件即可，无需登录、注册或填 API Key（已停用匿名免费车道，免费模型改由自建 Kiro 网关提供，并解封 WorkBuddy 渠道）。",
@@ -93,6 +93,7 @@
     "src/vault-data.js",
     "src/vault.js",
     "src/token-saver.js",
+    "src/workbuddy.js",
     "src/engine-parts",
     "src/core.js",
     "src/providers",
@@ -154,3 +155,6 @@
     }
   }
 }
+
+
+

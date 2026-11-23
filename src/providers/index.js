@@ -36,8 +36,16 @@ import { isDeniedChannel } from '../magpie-policy.js'
 /** The three wire formats the registry can name. */
 export const FORMAT_VALUES = Object.freeze(['openai-chat', 'openai-responses', 'anthropic-messages'])
 
-/** How a provider is made available; `none` covers the keyless and local rows. */
-export const AUTH_KINDS = Object.freeze(['apiKey', 'none', 'oauth', 'adc'])
+/**
+ * How a provider is made available; `none` covers the keyless and local rows.
+ *
+ * CUSTOM FORK: `vault` is this build's own kind. A vault provider takes no key
+ * from the settings page — its credential is an OAuth token another component
+ * already stored on this machine (WorkBuddy writes one under `$DSH_HOME`).
+ * `src/aggregate.js` resolves it by reading that file, so the row behaves like
+ * a keyed provider to every consumer while the user never pastes anything.
+ */
+export const AUTH_KINDS = Object.freeze(['apiKey', 'none', 'oauth', 'adc', 'vault'])
 
 /**
  * Category values in the order `registry.json` sorts by (alphabetical, so a

@@ -1,81 +1,5 @@
 [
   {
-    "id": "kiro",
-    "name": "Kiro 网关",
-    "category": "apikey",
-    "auth": {
-      "kind": "apiKey",
-      "env": "KIRO_API_KEY",
-      "url": "https://github.com/ZyphrZero/kiro.rs"
-    },
-    "baseUrl": "https://kiro.xiaoasi.xyz/v1",
-    "baseUrlOverrideEnv": "KIRO_BASE_URL",
-    "modelsUrl": "https://kiro.xiaoasi.xyz/v1/models",
-    "format": "openai-chat",
-    "models": [
-      {
-        "id": "auto",
-        "name": "auto",
-        "contextWindow": 1000000,
-        "vision": null,
-        "reasoning": null
-      },
-      {
-        "id": "claude-haiku-4.5",
-        "name": "claude-haiku-4.5",
-        "contextWindow": 200000,
-        "vision": null,
-        "reasoning": null
-      },
-      {
-        "id": "claude-sonnet-4.5",
-        "name": "claude-sonnet-4.5",
-        "contextWindow": 200000,
-        "vision": null,
-        "reasoning": null
-      },
-      {
-        "id": "deepseek-3.2",
-        "name": "deepseek-3.2",
-        "contextWindow": 164000,
-        "vision": null,
-        "reasoning": null
-      },
-      {
-        "id": "glm-5",
-        "name": "glm-5",
-        "contextWindow": 200000,
-        "vision": null,
-        "reasoning": null
-      },
-      {
-        "id": "minimax-m2.1",
-        "name": "minimax-m2.1",
-        "contextWindow": 196000,
-        "vision": null,
-        "reasoning": null
-      },
-      {
-        "id": "minimax-m2.5",
-        "name": "minimax-m2.5",
-        "contextWindow": 196000,
-        "vision": null,
-        "reasoning": null
-      },
-      {
-        "id": "qwen3-coder-next",
-        "name": "qwen3-coder-next",
-        "contextWindow": 256000,
-        "vision": null,
-        "reasoning": null
-      }
-    ],
-    "notes": "自建 Kiro 网关（kiro.rs）聚合渠道，公网 https://kiro.xiaoasi.xyz/v1。额度由网关管理员发放，429 表示免费额度用尽，请按界面提示联系维护者充值。",
-    "website": "https://github.com/ZyphrZero/kiro.rs",
-    "local": false,
-    "source": "custom"
-  },
-  {
     "id": "agnes",
     "name": "Agnes AI",
     "category": "apikey",
@@ -1292,6 +1216,82 @@
     "source": "custom",
     "sourceUrl": "https://github.com/Ebony-Vinyl/dsh-our-free-model/blob/main/docs/provider-compatibility.md",
     "modelsUrl": "https://api.kimi.com/coding/v1/models"
+  },
+  {
+    "id": "kiro",
+    "name": "Kiro 网关",
+    "category": "apikey",
+    "auth": {
+      "kind": "apiKey",
+      "env": "KIRO_API_KEY",
+      "url": "https://github.com/ZyphrZero/kiro.rs"
+    },
+    "baseUrl": "https://kiro.xiaoasi.xyz/v1",
+    "baseUrlOverrideEnv": "KIRO_BASE_URL",
+    "modelsUrl": "https://kiro.xiaoasi.xyz/v1/models",
+    "format": "openai-chat",
+    "models": [
+      {
+        "id": "auto",
+        "name": "auto",
+        "contextWindow": 1000000,
+        "vision": null,
+        "reasoning": null
+      },
+      {
+        "id": "claude-haiku-4.5",
+        "name": "claude-haiku-4.5",
+        "contextWindow": 200000,
+        "vision": null,
+        "reasoning": null
+      },
+      {
+        "id": "claude-sonnet-4.5",
+        "name": "claude-sonnet-4.5",
+        "contextWindow": 200000,
+        "vision": null,
+        "reasoning": null
+      },
+      {
+        "id": "deepseek-3.2",
+        "name": "deepseek-3.2",
+        "contextWindow": 164000,
+        "vision": null,
+        "reasoning": null
+      },
+      {
+        "id": "glm-5",
+        "name": "glm-5",
+        "contextWindow": 200000,
+        "vision": null,
+        "reasoning": null
+      },
+      {
+        "id": "minimax-m2.1",
+        "name": "minimax-m2.1",
+        "contextWindow": 196000,
+        "vision": null,
+        "reasoning": null
+      },
+      {
+        "id": "minimax-m2.5",
+        "name": "minimax-m2.5",
+        "contextWindow": 196000,
+        "vision": null,
+        "reasoning": null
+      },
+      {
+        "id": "qwen3-coder-next",
+        "name": "qwen3-coder-next",
+        "contextWindow": 256000,
+        "vision": null,
+        "reasoning": null
+      }
+    ],
+    "notes": "自建 Kiro 网关（kiro.rs）聚合渠道，公网 https://kiro.xiaoasi.xyz/v1。额度由网关管理员发放，429 表示免费额度用尽，请按界面提示联系维护者充值。",
+    "website": "https://github.com/ZyphrZero/kiro.rs",
+    "local": false,
+    "source": "custom"
   },
   {
     "id": "lightning",
@@ -5153,19 +5153,252 @@
   },
   {
     "id": "workbuddy",
-    "name": "WorkBuddy（外部插件提供）",
+    "name": "WorkBuddy 国内版",
     "category": "oauth",
     "auth": {
-      "kind": "oauth",
+      "kind": "vault",
       "env": "",
-      "url": "https://github.com/dingminhua/dsh-connect-workbuddy"
+      "url": "https://www.codebuddy.cn"
     },
-    "baseUrl": "",
+    "baseUrl": "https://copilot.tencent.com/v2",
     "format": "openai-chat",
-    "models": [],
-    "notes": "本定制版不内建 WorkBuddy：国内版（workbuddy）与国际版（workbuddy-ai）由独立插件 dsh-connect-workbuddy 以 DSH 原生 LLM provider 的形式提供，登录、账号池、积分与模型目录均由该插件管理。此处仅作声明，便于在本目录中说明该渠道的来源；本插件的聚合渠道不会也不应代理它。",
-    "website": "https://github.com/dingminhua/dsh-connect-workbuddy",
+    "vaultRegion": "cn",
+    "models": [
+      {
+        "id": "auto",
+        "name": "Auto",
+        "contextWindow": 256000,
+        "maxOutputTokens": 32000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": null,
+        "notes": "平衡效果与速度，自动匹配模型，倍率浮动"
+      },
+      {
+        "id": "hy4flash-free",
+        "name": "Hy4 Flash Free",
+        "contextWindow": 960000,
+        "maxOutputTokens": 64000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.00",
+        "notes": "免费模型，消耗 0 积分"
+      },
+      {
+        "id": "hy4flash",
+        "name": "Hy4 Flash",
+        "contextWindow": 960000,
+        "maxOutputTokens": 64000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.03",
+        "notes": "极低倍率，长上下文"
+      },
+      {
+        "id": "hy4std",
+        "name": "Hy4 Standard",
+        "contextWindow": 960000,
+        "maxOutputTokens": 64000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.29",
+        "notes": "标准档，96 万上下文"
+      },
+      {
+        "id": "glm-5.3",
+        "name": "GLM 5.3",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 64000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.69",
+        "notes": "智谱 GLM 5.3，100 万上下文"
+      },
+      {
+        "id": "glm-5.3-flash",
+        "name": "GLM 5.3 Flash",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 131072,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.08",
+        "notes": "GLM 5.3 轻量版，超低倍率"
+      },
+      {
+        "id": "glm-5.2",
+        "name": "GLM 5.2",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 64000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.79",
+        "notes": "智谱 GLM 5.2"
+      },
+      {
+        "id": "kimi-k3.1-pro",
+        "name": "Kimi K3.1 Pro",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 32000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.97",
+        "notes": "月之暗面 Kimi K3.1 Pro"
+      },
+      {
+        "id": "kimi-k3-1",
+        "name": "Kimi K3.1",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 32000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x1.62",
+        "notes": "Kimi K3.1"
+      },
+      {
+        "id": "kimi-k2.8-preview",
+        "name": "Kimi K2.8 Preview",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 64000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.77",
+        "notes": "Kimi K2.8 预览版"
+      },
+      {
+        "id": "deepseek-v4-flash",
+        "name": "DeepSeek V4 Flash",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 50000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.17",
+        "notes": "DeepSeek V4 Flash"
+      },
+      {
+        "id": "deepseek-v4.1-flash",
+        "name": "DeepSeek V4.1 Flash",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.11",
+        "notes": "DeepSeek V4.1 Flash，低倍率长输出"
+      },
+      {
+        "id": "deepseek-v4-pro",
+        "name": "DeepSeek V4 Pro",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.51",
+        "notes": "DeepSeek V4 Pro"
+      },
+      {
+        "id": "minimax-m3.1-flash",
+        "name": "MiniMax M3.1 Flash",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.08",
+        "notes": "MiniMax M3.1 Flash"
+      },
+      {
+        "id": "minimax-m2.5",
+        "name": "MiniMax M2.5",
+        "contextWindow": 200000,
+        "maxOutputTokens": 48000,
+        "vision": null,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.18",
+        "notes": "MiniMax M2.5"
+      },
+      {
+        "id": "space-bunny",
+        "name": "Space Bunny",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.08",
+        "notes": "Space Bunny，低倍率长输出"
+      },
+      {
+        "id": "step-5-preview",
+        "name": "Step 5 Preview",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 64000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.33",
+        "notes": "阶跃星辰 Step 5 预览"
+      },
+      {
+        "id": "mimo-v2.6-pro",
+        "name": "MiMo V2.6 Pro",
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "vision": true,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.13",
+        "notes": "小米 MiMo V2.6 Pro"
+      },
+      {
+        "id": "hunyuan-2.0-thinking",
+        "name": "Hunyuan 2.0 Thinking",
+        "contextWindow": 128000,
+        "maxOutputTokens": 24000,
+        "vision": null,
+        "reasoning": true,
+        "tools": true,
+        "credits": "x0.04",
+        "notes": "腾讯混元 2.0 思考版，极低倍率"
+      }
+    ],
+    "notes": "WorkBuddy 国内版（CodeBuddy）。凭据取自本机已登录的 WorkBuddy 账号（扫码登录一次即可，无需在此粘贴 Key）。积分按倍率消耗，x0.00 为免费模型。倍率与上下文由上游目录实时回报。",
+    "website": "https://www.workbuddy.cn",
     "local": false,
-    "source": "external"
+    "source": "custom",
+    "modelsUrl": "https://copilot.tencent.com/v2/enterprises/personal/models",
+    "baseUrlOverrideEnv": "WORKBUDDY_CN_BASE"
+  },
+  {
+    "id": "workbuddy-global",
+    "name": "WorkBuddy 国际版",
+    "category": "oauth",
+    "auth": {
+      "kind": "vault",
+      "env": "",
+      "url": "https://www.workbuddy.ai"
+    },
+    "baseUrl": "https://www.workbuddy.ai/v2",
+    "format": "openai-chat",
+    "vaultRegion": "global",
+    "models": [],
+    "notes": "WorkBuddy 国际版。凭据同样取自本机已登录的 WorkBuddy 账号；未登录国际版时该渠道不显示。模型目录在登录后由上游实时拉取。",
+    "website": "https://www.workbuddy.ai",
+    "local": false,
+    "source": "custom",
+    "modelsUrl": "https://www.workbuddy.ai/v2/enterprises/personal/models",
+    "baseUrlOverrideEnv": "WORKBUDDY_GLOBAL_BASE"
   }
 ]

@@ -1,6 +1,6 @@
 [package]
 name = "ofm-desktop"
-version = "2.9.1"
+version = "2.9.4"
 description = "Our Free Model Desktop"
 authors = ["Ebony-Vinyl"]
 license = "MIT"
@@ -22,3 +22,6 @@ tauri = { version = "2", features = ["tray-icon", "image-png"] }
 tauri-plugin-single-instance = "2"
 sha2 = "0.10.9"
 semver = "1.0.28"
+
+
+

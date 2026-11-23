@@ -2376,7 +2376,7 @@ dependencies = [
 
 [[package]]
 name = "ofm-desktop"
-version = "2.9.1"
+version = "2.9.4"
 dependencies = [
  "dirs 5.0.1",
  "semver",
@@ -4917,3 +4917,6 @@ dependencies = [
  "syn 3.0.7",
  "winnow 1.0.4",
 ]
+
+
+

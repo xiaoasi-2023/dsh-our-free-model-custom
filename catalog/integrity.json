@@ -1,5 +1,5 @@
 {
-  "version": "2.9.1",
+  "version": "2.9.4",
   "algorithm": "sha256",
   "files": [
     {
@@ -14,8 +14,8 @@
     },
     {
       "path": "client.js",
-      "size": 687026,
-      "sha256": "c17276cf61183e68aec6e4b523696ad953a50631c205efef44b0c7837b489f3c"
+      "size": 693645,
+      "sha256": "7ae6ce24ae7e3be4181960a215a2d9cbae6798b09e01a2226c7ee74b5eb6f37a"
     },
     {
       "path": "cordis.patch.yml",
@@ -29,8 +29,8 @@
     },
     {
       "path": "index.js",
-      "size": 149495,
-      "sha256": "4b743be68b1b6d2386840e754e7b26bd3ed235b3c5dfb7db1da854f0f7e7c52f"
+      "size": 153935,
+      "sha256": "48ad252f3050c8b8eb698ec06bda4554c6ca625deb91644faa999f7698b2b461"
     },
     {
       "path": "LICENSE",
@@ -49,8 +49,8 @@
     },
     {
       "path": "package.json",
-      "size": 4887,
-      "sha256": "979201a6764d5459ec61070ca9b15b35328e249a6088bf69a9422c886819766d"
+      "size": 4914,
+      "sha256": "41deb1c48d9fa95f58ab7ded63051c0ff350ab56b324c10783e0e6c97b3cd3c3"
     },
     {
       "path": "src/adapter.js",
@@ -59,8 +59,8 @@
     },
     {
       "path": "src/aggregate.js",
-      "size": 35282,
-      "sha256": "d256979f3ff191236609e18d49a21b42888f0357cc33e12f18dcd4af8e6dcd03"
+      "size": 36939,
+      "sha256": "91d882b33cfb275083267b1676c120e03bcaee9d020f4fbc86d565fc4de85a75"
     },
     {
       "path": "src/anthropic.js",
@@ -279,13 +279,13 @@
     },
     {
       "path": "src/providers/index.js",
-      "size": 10266,
-      "sha256": "0b6b750fe0d4f919cccdb3a75828d996675497ea4355736e219ba826dcf16e73"
+      "size": 10675,
+      "sha256": "a6dc15e4d736b48f7e6cce0b50fa78f0819701ca643fc37f29509661bdd330b2"
     },
     {
       "path": "src/providers/registry.json",
-      "size": 140675,
-      "sha256": "9802d0ad2625cb2d6a431f64f2276602bffe4330ca7535a4ef1b6a207380c771"
+      "size": 147017,
+      "sha256": "8664cca48fe98a6308253a035d70deac2d5aaeef50f016134841329d1eca7e6c"
     },
     {
       "path": "src/recovery.js",
@@ -368,6 +368,11 @@
       "sha256": "9ee2cd231f9642883485787832ea82c6411c062ba276e70cc770cff3a464f186"
     },
     {
+      "path": "src/workbuddy.js",
+      "size": 20553,
+      "sha256": "3e495ce968e46572c034da89165d3f1afade386a588d1c8ac39bab8c0d7974f5"
+    },
+    {
       "path": "vendor/channel-pack/LICENSE",
       "size": 1060,
       "sha256": "0f62f49c7c75f82fe6d88eebfbdd1b647a89e42ab765ee470d0496af40ec0b25"
@@ -379,8 +384,8 @@
     },
     {
       "path": "vendor/channel-pack/pack.js",
-      "size": 2898649,
-      "sha256": "5603199b0cb634642da7cde02a28ee2a7b26d2de89ac7d70b341da87a95fd02a"
+      "size": 2628037,
+      "sha256": "9446221c19f1726a63a9f5a81935cbe8378547e037fb16434220d53bac715611"
     },
     {
       "path": "vendor/channel-pack/qoder-auth-wasm.wasm",

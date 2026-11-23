@@ -53,6 +53,17 @@ import { resolveAttributionUserAgent } from './adapter/kernel.js'
 import { buildAggregateCatalog, fetchProviderModels, isAggregateEntry, testProvider } from './src/aggregate.js'
 import { buildComboCatalog, COMBO_STRATEGIES, isComboEntry, normalizeCombos, pruneRotation } from './src/combos.js'
 import { getProvider, listProviders } from './src/providers/index.js'
+// CUSTOM FORK: the WorkBuddy channel's credential is an OAuth token, so this
+// bundle carries its own sign-in handshake instead of delegating to another
+// plugin (see src/workbuddy.js).
+import {
+  WORKBUDDY_ENDPOINTS,
+  WORKBUDDY_REGIONS,
+  pollWorkbuddyLogin,
+  readWorkbuddyCredentials,
+  resolveWorkbuddyCredential,
+  startWorkbuddyLogin,
+} from './src/workbuddy.js'
 import { addSavings, describeSavingsTotal, emptySavings, saverConfig, savingsPercent } from './src/token-saver.js'
 import { CAVEMAN_LEVELS, PONYTAIL_LEVELS } from './src/token-saver.js'
 import { OPTIMIZATIONS } from './src/local-optimize.js'
@@ -1276,6 +1287,26 @@ export function apply(ctx, config) {
         return { models: ids }
       },
     },
+    // ── WorkBuddy sign-in ───────────────────────────────────────────────────
+    // CUSTOM FORK: WorkBuddy's credential is an OAuth token rather than a key,
+    // so the page runs a browser handshake. These callbacks are the host half of
+    // it; src/workbuddy.js owns the protocol and the on-disk vault.
+    workbuddy: {
+      label: region => WORKBUDDY_ENDPOINTS[region]?.label ?? region,
+      credential: region => resolveWorkbuddyCredential(region),
+      accounts: region => readWorkbuddyCredentials(region).map(row => ({
+        nickname: row.credential?.account?.nickname ?? '',
+        uid: row.credential?.account?.uid ?? '',
+        expiresAt: Number(row.credential?.auth?.expiresAt ?? 0),
+      })),
+      startLogin: region => startWorkbuddyLogin(region),
+      pollLogin: (loginId, region) => pollWorkbuddyLogin(loginId, region),
+      logout: region => {
+        for (const row of readWorkbuddyCredentials(region)) {
+          try { fs.rmSync(row.file, { force: true }) } catch { /* already gone */ }
+        }
+      },
+    },
     // ── fallback chains ─────────────────────────────────────────────────────
     combos: {
       list: () => ({
@@ -1903,6 +1934,17 @@ function perfSnapshot(root, fetchImpl) {
   return perfPending
 }
 
+/**
+ * The WorkBuddy regions this build offers, in page order.
+ *
+ * Kept as a local helper rather than inlined because both the status route and
+ * the login routes validate against it — one list, so a region cannot be
+ * pollable without being visible, or vice versa.
+ */
+function workbuddyRegions() {
+  return [...WORKBUDDY_REGIONS]
+}
+
 export function createApiRoutes(deps) {
   return async function handler(req, res) {
     const url = new URL(req.url ?? '/', 'http://localhost')
@@ -2043,6 +2085,56 @@ export function createApiRoutes(deps) {
       if (method === 'POST' && routePath === '/providers/discover') {
         const body = await readJson(req)
         return send(200, await deps.providers.discover(body?.providerId))
+      }
+      // ── WorkBuddy sign-in ──────────────────────────────────────────────────
+      // CUSTOM FORK: this channel's credential is an OAuth token, so the page
+      // runs the browser handshake here instead of asking for a pasted key.
+      // The three routes mirror the upstream's three steps.
+      if (method === 'GET' && routePath === '/workbuddy/status') {
+        const rows = workbuddyRegions().map(region => {
+          const stored = deps.workbuddy.credential(region)
+          return {
+            region,
+            label: deps.workbuddy.label(region),
+            signedIn: stored !== null,
+            nickname: stored?.credential?.account?.nickname ?? '',
+            expiresAt: Number(stored?.credential?.auth?.expiresAt ?? 0),
+          }
+        })
+        return send(200, { regions: rows })
+      }
+      if (method === 'POST' && routePath === '/workbuddy/login/start') {
+        const body = await readJson(req)
+        const region = String(body?.region ?? 'cn')
+        if (!workbuddyRegions().includes(region)) return send(400, { error: `unknown region "${region}"` })
+        try {
+          return send(200, await deps.workbuddy.startLogin(region))
+        } catch (error) {
+          return send(502, { error: String(error?.message ?? error).slice(0, 300) })
+        }
+      }
+      if (method === 'POST' && routePath === '/workbuddy/login/poll') {
+        const body = await readJson(req)
+        const region = String(body?.region ?? 'cn')
+        const loginId = String(body?.loginId ?? '')
+        if (loginId === '') return send(400, { error: 'loginId is required' })
+        try {
+          const result = await deps.workbuddy.pollLogin(loginId, region)
+          // A completed sign-in can change which rows the picker offers, so the
+          // topology is re-emitted exactly like a provider save does.
+          if (result?.done === true && result?.account !== undefined) emitTopology()
+          return send(200, result)
+        } catch (error) {
+          return send(502, { error: String(error?.message ?? error).slice(0, 300) })
+        }
+      }
+      if (method === 'POST' && routePath === '/workbuddy/logout') {
+        const body = await readJson(req)
+        const region = String(body?.region ?? 'cn')
+        if (!workbuddyRegions().includes(region)) return send(400, { error: `unknown region "${region}"` })
+        deps.workbuddy.logout(region)
+        emitTopology()
+        return send(200, { ok: true })
       }
       // ── fallback chains ────────────────────────────────────────────────────
       if (method === 'GET' && routePath === '/combos') {

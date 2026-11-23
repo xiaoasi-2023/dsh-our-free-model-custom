@@ -1,6 +1,6 @@
 {
   "name": "our-free-model-desktop",
-  "version": "2.9.1",
+  "version": "2.9.4",
   "description": "Our Free Model 独立服务的 Windows 桌面壳",
   "scripts": {
     "dev": "tauri dev",
@@ -17,3 +17,6 @@
   },
   "private": true
 }
+
+
+
